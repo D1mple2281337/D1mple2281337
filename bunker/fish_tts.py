@@ -2,7 +2,7 @@
 """Озвучка через Fish Audio по абзацам + точные тайминги.
 python3 fish_tts.py voice_script.txt <voice_id> audio/fish  -> audio/fish/voice.wav, timings_fish.json
 Ключ: заголовок Authorization подставляет прокси окружения (FISH_API_KEY не нужен)."""
-import sys, os, re, json, subprocess, urllib.request
+import sys, os, re, json, subprocess, urllib.request, hashlib
 script, voice, outdir = sys.argv[1:4]
 model = os.environ.get("FISH_MODEL", "s1")
 os.makedirs(outdir, exist_ok=True)
@@ -10,7 +10,8 @@ paras = [re.sub(r"\[[^\]]*\]", "", p).strip() for p in open(script, encoding="ut
 GAP = 0.4
 files = []
 for i, p in enumerate(paras):
-    fn = f"{outdir}/p{i:02d}.mp3"
+    h = hashlib.md5(f"{model}|{voice}|{p}".encode()).hexdigest()[:10]
+    fn = f"{outdir}/p_{h}.mp3"
     if not os.path.exists(fn):
         body = json.dumps({"text": p, "reference_id": voice, "format": "mp3", "mp3_bitrate": 192,
                            "normalize": True, "latency": "normal"}).encode()

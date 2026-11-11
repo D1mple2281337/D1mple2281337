@@ -48,9 +48,13 @@ def back_out(t):
 # ---------- сценарий ----------
 # *текст* — жёлтый, !текст! — красный
 SEGMENTS = [
-    dict(cap="У меня *25 000 $* и ровно *1 год*.", scene="intro"),
-    dict(cap="Через год — !АПОКАЛИПСИС!.", scene="apoc"),
-    dict(cap="Задача: построить *бункер* и выжить.", scene="task"),
+    dict(cap="Вчера по всем каналам объявили: через *год* — !конец света!.", scene="tv"),
+    dict(cap="К Земле летит !астероид!. Выжить можно только *под землёй*.", scene="asteroid"),
+    dict(cap="Денег у меня нет. Поэтому я иду в *банк*.", scene="bank"),
+    dict(cap="Беру кредит — *25 000 $*. Возвращать всё равно будет !некому!.", scene="loan",
+         budget=25000, delta=25000),
+    dict(cap="Но что, если конец света !не наступит!?", scene="doubt"),
+    dict(cap="Тогда у меня будет бункер и огромный !долг!. Но рисковать не буду — *строю*.", scene="doubt2"),
     dict(cap="Что нужно бункеру? Участок. Котлован. Стены. Воздух.", scene="list"),
     dict(cap="Пункт первый: *участок*.", scene="city", tag="1. УЧАСТОК"),
     dict(cap="В городе земля стоит как !самолёт!.", scene="city_price", tag="1. УЧАСТОК"),
@@ -299,7 +303,10 @@ def draw_hud(img, days, pct, budget, delta, delta_t):
     if delta and 0 <= delta_t < 2.0:
         a = clamp(1 - (delta_t - 1.2) / 0.8)
         y = 196 + delta_t * 14
-        d.text((862, y), f"−{fmt(-delta)} $", font=font(44), fill=lc((40, 20, 20), RED, a), anchor="mm")
+        if delta > 0:
+            d.text((862, y), f"+{fmt(delta)} $", font=font(44), fill=lc((20, 40, 20), GREEN, a), anchor="mm")
+        else:
+            d.text((862, y), f"−{fmt(-delta)} $", font=font(44), fill=lc((40, 20, 20), RED, a), anchor="mm")
 
 
 def parse_cap(cap):
@@ -465,12 +472,14 @@ def draw_choice(img, lt, gt, focus=None, vote=False):
 def render_scene(img, seg, i, lt, p, gt, st):
     sc = seg["scene"]
     red = 0.0
-    if sc == "apoc":
-        red = ease_io(lt / 0.6)
-    elif i == 2:
+    if sc == "asteroid":
+        red = ease_io(lt / 0.8)
+    elif sc == "bank":
         red = 1 - ease_io(lt / 0.8)
+    elif sc == "apoc":
+        red = ease_io(lt / 0.6)
     d = draw_sky(img, gt, red)
-    city = sc in ("city", "city_price")
+    city = sc in ("city", "city_price", "bank", "loan")
     if not city:
         draw_landscape(d)
     else:
@@ -494,7 +503,105 @@ def render_scene(img, seg, i, lt, p, gt, st):
         pit_w, pit_d = 90, 12 + 10 * p
     draw_ground(d, pit_w, pit_d, water, cx=540, wet=wet)
 
-    if sc == "intro":
+    if sc == "tv":
+        # телевизор с экстренным выпуском
+        s_ = back_out(lt / 0.4)
+        cx, cy, tw_, th_ = 445, 600, 680 * s_, 450 * s_
+        if s_ > 0.02:
+            d.rounded_rectangle([cx - tw_ / 2 - 24, cy - th_ / 2 - 24, cx + tw_ / 2 + 24, cy + th_ / 2 + 24],
+                                radius=26, fill=(36, 36, 42))
+            blink = int(gt * 3) % 2 == 0
+            d.rectangle([cx - tw_ / 2, cy - th_ / 2, cx + tw_ / 2, cy + th_ / 2],
+                        fill=(150, 20, 24) if blink else (120, 14, 20))
+            d.line([(cx - 60, cy + th_ / 2 + 24), (cx - 110, cy + th_ / 2 + 80)], fill=(36, 36, 42), width=14)
+            d.line([(cx + 60, cy + th_ / 2 + 24), (cx + 110, cy + th_ / 2 + 80)], fill=(36, 36, 42), width=14)
+            d.text((cx, cy - th_ / 2 + 60 * s_), "СРОЧНО!", font=font(int(80 * s_) + 1), fill=WHITE, anchor="mm")
+            # астероид на экране
+            ax, ay = cx, cy + 10 * s_
+            d.ellipse([ax - 70 * s_, ay - 60 * s_, ax + 70 * s_, ay + 60 * s_], fill=(110, 96, 84))
+            d.ellipse([ax - 30 * s_, ay - 30 * s_, ax - 4 * s_, ay - 6 * s_], fill=(80, 70, 62))
+            d.ellipse([ax + 14 * s_, ay + 6 * s_, ax + 44 * s_, ay + 32 * s_], fill=(80, 70, 62))
+            # бегущая строка
+            d.rectangle([cx - tw_ / 2, cy + th_ / 2 - 80 * s_, cx + tw_ / 2, cy + th_ / 2], fill=(250, 220, 40))
+            tick = "КОНЕЦ СВЕТА ЧЕРЕЗ 365 ДНЕЙ  •  "
+            f_ = font(int(40 * s_) + 1)
+            bw, bh = int(tw_), int(80 * s_)
+            band = Image.new("RGB", (max(1, bw), max(1, bh)), (250, 220, 40))
+            bd = ImageDraw.Draw(band)
+            twt = bd.textlength(tick, font=f_)
+            x = -((lt * 260) % twt)
+            while x < bw:
+                bd.text((x, bh / 2), tick, font=f_, fill=(30, 20, 20), anchor="lm")
+                x += twt
+            img.paste(band, (int(cx - tw_ / 2), int(cy + th_ / 2 - bh)))
+        draw_hero(d, 935, GROUND + 4, 1.4, gt, face=-1)
+        if lt > 1.2:  # «!» над головой
+            d.text((935, GROUND - 330), "!", font=font(110), fill=YEL, anchor="mm")
+    elif sc == "asteroid":
+        # огромный астероид в небе медленно растёт
+        k_ = 0.6 + 0.4 * ease_io(lt / max(1, seg["dur"]))
+        ax, ay, r = 700, 380, 150 * k_
+        for q in range(10):
+            tx, ty, rr = ax + (q + 1) * 26 * k_, ay - (q + 1) * 30 * k_, r * (1 - q * 0.08)
+            d.ellipse([tx - rr, ty - rr, tx + rr, ty + rr], fill=lc((255, 180, 80), (160, 40, 20), q / 10))
+        d.ellipse([ax - r, ay - r, ax + r, ay + r], fill=(120, 100, 86))
+        for ox, oy, rr in [(-50, -40, 34), (40, 30, 44), (60, -60, 22), (-40, 60, 26)]:
+            d.ellipse([ax + ox * k_ - rr * k_, ay + oy * k_ - rr * k_, ax + ox * k_ + rr * k_, ay + oy * k_ + rr * k_],
+                      fill=(88, 74, 64))
+        draw_hero(d, 300, GROUND + 4, 1.5, gt)
+        if lt > 0.9:
+            # стрелка «под землю»
+            d.polygon([(540, GROUND + 60), (500, GROUND + 60), (500, GROUND + 160), (460, GROUND + 160),
+                       (520, GROUND + 250), (580, GROUND + 160), (540, GROUND + 160)], fill=YEL)
+            d.text((620, GROUND + 160), "ПОД ЗЕМЛЮ", font=font(52), fill=YEL, anchor="lm")
+    elif sc in ("bank", "loan"):
+        # здание банка поверх города
+        bx = 540
+        d.polygon([(bx - 330, GROUND - 470), (bx, GROUND - 600), (bx + 330, GROUND - 470)], fill=(210, 206, 196))
+        d.rectangle([bx - 310, GROUND - 470, bx + 310, GROUND - 420], fill=(196, 190, 180))
+        for c_ in range(6):
+            x = bx - 270 + c_ * 108
+            d.rectangle([x - 22, GROUND - 420, x + 22, GROUND - 40], fill=(226, 222, 212))
+        d.rectangle([bx - 330, GROUND - 40, bx + 330, GROUND], fill=(180, 174, 164))
+        d.text((bx, GROUND - 510), "БАНК", font=font(64), fill=(40, 40, 50), anchor="mm")
+        d.rectangle([bx - 60, GROUND - 200, bx + 60, GROUND - 40], fill=(60, 50, 44))
+        if sc == "bank":
+            wt = clamp(lt / 1.8)
+            draw_hero(d, lerp(-60, 420, ease_out(wt)), GROUND + 4, 1.4, gt, walk=wt < 1)
+        else:
+            draw_hero(d, 420, GROUND + 4, 1.4, gt)
+            # договор
+            s_ = back_out(lt / 0.4)
+            if s_ > 0.02:
+                cx, cy = 720, 560
+                d.rectangle([cx - 150 * s_, cy - 190 * s_, cx + 150 * s_, cy + 190 * s_], fill=(246, 244, 236))
+                d.text((cx, cy - 140 * s_), "КРЕДИТ", font=font(int(46 * s_) + 1), fill=(30, 30, 40), anchor="mm")
+                d.text((cx, cy - 70 * s_), "25 000 $", font=font(int(52 * s_) + 1), fill=(200, 140, 10), anchor="mm")
+                for q in range(4):
+                    yy = cy - 10 * s_ + q * 40 * s_
+                    d.line([(cx - 110 * s_, yy), (cx + 110 * s_, yy)], fill=(180, 180, 190), width=5)
+                d.text((cx, cy + 165 * s_), "мелкий шрифт...", font=font(int(22 * s_) + 1, True),
+                       fill=(150, 150, 160), anchor="mm")
+            draw_stamp(img, "ОДОБРЕНО", lt - 0.8, col=(40, 160, 80), cy=640)
+            # дождь из монет
+            for k in range(9):
+                ct = (lt * 1.4 + k * 0.37) % 1.0
+                cx_ = 120 + k * 105; cy_ = 300 + ct * 650
+                d.ellipse([cx_ - 22, cy_ - 22, cx_ + 22, cy_ + 22], fill=(255, 200, 40), outline=(200, 140, 20),
+                          width=5)
+                d.text((cx_, cy_), "$", font=font(26), fill=(170, 110, 10), anchor="mm")
+    elif sc in ("doubt", "doubt2"):
+        draw_hero(d, 540, GROUND + 4, 1.7, gt, shovel=(sc == "doubt2"), dig=lt)
+        if sc == "doubt":
+            s_ = back_out(lt / 0.5)
+            wob = math.sin(gt * 5) * 6
+            d.text((540 + wob, 520), "?", font=font(int(300 * s_) + 1), fill=YEL, anchor="mm",
+                   stroke_width=10, stroke_fill=(20, 16, 20))
+        else:
+            draw_stamp(img, "ДОЛГ 25 000 $", lt - 0.2, cy=430)
+            if lt > 1.6:
+                draw_stamp(img, "СТРОЮ!", lt - 1.6, col=(40, 160, 80), cy=620)
+    elif sc == "intro":
         draw_hero(d, 540, GROUND + 4, 1.6, gt)
         f = font(int(96 * back_out(lt / 0.5)) + 1)
         d.text((540, 430), "БУНКЕР", font=f, fill=WHITE, anchor="mm")
@@ -681,7 +788,7 @@ def build_timeline(timings):
 
 
 def state_at(t):
-    days, pct, budget = 365.0, 0.0, 25000.0
+    days, pct, budget = 365.0, 0.0, 0.0
     delta, delta_t = None, -1
     for seg in SEGMENTS:
         if t < seg["start"]: break
@@ -701,7 +808,7 @@ def state_at(t):
 
 
 def prime_state():
-    days, pct, budget = 365.0, 0.0, 25000.0
+    days, pct, budget = 365.0, 0.0, 0.0
     for seg in SEGMENTS:
         if "days" in seg: seg["_d0"] = days; days = seg["days"]
         if "pct" in seg: seg["_p0"] = pct; pct = seg["pct"]
