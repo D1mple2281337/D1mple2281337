@@ -372,14 +372,15 @@ def draw_stamp(img, text, lt, col=RED, cy=560):
     if lt < 0: return
     s = 1 + 1.5 * (1 - ease_out(lt / 0.25))
     f = font(int(76))
-    tmp = Image.new("RGBA", (900, 200), (0, 0, 0, 0))
+    tw = ImageDraw.Draw(Image.new("L", (1, 1))).textlength(text, font=f)
+    TW = int(tw + 120)
+    tmp = Image.new("RGBA", (TW, 200), (0, 0, 0, 0))
     td = ImageDraw.Draw(tmp)
-    tw = td.textlength(text, font=f)
-    td.rounded_rectangle([450 - tw / 2 - 30, 30, 450 + tw / 2 + 30, 170], radius=14, fill=col + (235,),
+    td.rounded_rectangle([TW / 2 - tw / 2 - 30, 30, TW / 2 + tw / 2 + 30, 170], radius=14, fill=col + (235,),
                          outline=(255, 230, 230, 255), width=7)
-    td.text((450, 100), text, font=f, fill=WHITE, anchor="mm")
-    tmp = tmp.rotate(6, resample=Image.BICUBIC, expand=False)
-    tmp = tmp.resize((int(900 * s), int(200 * s)), Image.BICUBIC)
+    td.text((TW / 2, 100), text, font=f, fill=WHITE, anchor="mm")
+    tmp = tmp.rotate(6 if TW < 1000 else 3, resample=Image.BICUBIC, expand=True)
+    tmp = tmp.resize((int(tmp.width * s), int(tmp.height * s)), Image.BICUBIC)
     img.paste(tmp, (int(540 - tmp.width / 2), int(cy - tmp.height / 2)), tmp)
 
 
