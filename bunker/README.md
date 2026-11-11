@@ -23,3 +23,13 @@ python3 render.py --timings timings.json --audio audio/mix_norm.wav --out out/bu
 ## Итог серии 1
 - Участок: −4 000 $ · Котлован: −2 500 $ · Дренаж и насос: −1 500 $
 - Осталось **17 000 $** и **330 дней**, бункер готов на 30 %
+
+## Вариант с озвучкой Fish Audio (`out/bunker_ep1_fish.mp4`)
+Голос «Энергичный Рассказчик» (`48ec28a45588422b977a86460c11977f`), модель `s2.1-pro-free`.
+Каждый абзац озвучивается отдельно, поэтому тайминги субтитров точные (`timings_fish.json`).
+```bash
+FISH_MODEL=s2.1-pro-free python3 fish_tts.py voice_script.txt 48ec28a45588422b977a86460c11977f audio/fish
+python3 sfx.py timings_fish.json audio/sfx_fish.wav && python3 music.py audio/music_fish.wav 57
+# сведение — как выше, с audio/fish/voice.wav; затем:
+python3 render.py --timings timings_fish.json --audio audio/mix_fish_norm.wav --out out/bunker_ep1_fish.mp4
+```
