@@ -79,6 +79,15 @@ SEGMENTS = [
     dict(cap="В следующей серии строю то, что выберете вы.", scene="choice_vote2", tag="3. СТЕНЫ"),
 ]
 END_CARD = 2.6
+# настройки серии (серии 2+ переопределяют их в epN.py)
+INIT = (365.0, 0.0, 0.0)          # дни, % бункера, бюджет на старте
+EP_LABEL = "СЕРИЯ 1"
+END_LINES = ("БЕТОН или КОНТЕЙНЕР?", "ПИШИ В КОММЕНТАРИЯХ")
+CHECK_ITEMS = ["1. УЧАСТОК", "2. КОТЛОВАН", "3. СТЕНЫ", "4. ВОЗДУХ"]
+CHECK_TITLE = "ЧТО НУЖНО БУНКЕРУ"
+CHOICE_CARDS = [("БЕТОН", "concrete", (70, 150, 255), 280, "НАДЁЖНО", "ПОЛ-БЮДЖЕТА"),
+                ("КОНТЕЙНЕР", "container", (255, 204, 40), 800, "ДЁШЕВО", "МОЖЕТ СМЯТЬ")]
+ICONS = {}                        # kind -> fn(d, cx, cy, s) для своих иконок
 
 # ---------- статичные слои ----------
 rnd = random.Random(7)
@@ -395,14 +404,14 @@ def draw_checklist(img, lt, checks=0, reveal=4.0, highlight=None, y0=330):
     d = ImageDraw.Draw(img)
     s = back_out(lt / 0.4)
     if s < 0.02: return
-    items = ["1. УЧАСТОК", "2. КОТЛОВАН", "3. СТЕНЫ", "4. ВОЗДУХ"]
+    items = CHECK_ITEMS
     x0, x1 = 300, 780
     tmp = Image.new("RGBA", (520, 520), (0, 0, 0, 0))
     td = ImageDraw.Draw(tmp)
     td.rounded_rectangle([10, 10, 510, 510], radius=10, fill=(246, 244, 236, 255))
     for i in range(7):
         td.line([(30, 120 + i * 56), (490, 120 + i * 56)], fill=(190, 205, 230, 255), width=2)
-    td.text((260, 64), "ЧТО НУЖНО БУНКЕРУ", font=font(32), fill=(40, 40, 50, 255), anchor="mm")
+    td.text((260, 64), CHECK_TITLE, font=font(32), fill=(40, 40, 50, 255), anchor="mm")
     for i, it in enumerate(items):
         if i < reveal:
             yy = 150 + i * 80
@@ -417,7 +426,9 @@ def draw_checklist(img, lt, checks=0, reveal=4.0, highlight=None, y0=330):
 
 
 def draw_bunker_icon(d, cx, cy, kind, s=1.0):
-    if kind == "concrete":
+    if kind in ICONS:
+        ICONS[kind](d, cx, cy, s)
+    elif kind == "concrete":
         d.rectangle([cx - 150 * s, cy - 90 * s, cx + 150 * s, cy + 90 * s], fill=(150, 150, 150))
         d.rectangle([cx - 120 * s, cy - 60 * s, cx + 120 * s, cy + 60 * s], fill=(70, 70, 76))
         for i in range(-2, 3):
@@ -439,8 +450,7 @@ def draw_bunker_icon(d, cx, cy, kind, s=1.0):
 
 def draw_choice(img, lt, gt, focus=None, vote=False):
     d = ImageDraw.Draw(img)
-    cards = [("БЕТОН", "concrete", BLUE, 280, "НАДЁЖНО", "ПОЛ-БЮДЖЕТА"),
-             ("КОНТЕЙНЕР", "container", YEL, 800, "ДЁШЕВО", "МОЖЕТ СМЯТЬ")]
+    cards = CHOICE_CARDS
     for i, (name, kind, col, cx, plus, minus) in enumerate(cards):
         s = back_out((lt - i * 0.15) / 0.45)
         if s < 0.02: continue
@@ -753,9 +763,9 @@ def render_endcard(img, lt):
     d.rectangle([0, 0, W, H], fill=(14, 14, 20))
     s = back_out(lt / 0.5)
     d.text((540, 760), "БУНКЕР ЗА 25 000 $", font=font(int(70 * s) + 1), fill=WHITE, anchor="mm")
-    d.text((540, 860), "СЕРИЯ 1", font=font(int(54 * s) + 1), fill=YEL, anchor="mm")
-    d.text((540, 1040), "БЕТОН или КОНТЕЙНЕР?", font=font(int(52 * s) + 1), fill=WHITE, anchor="mm")
-    d.text((540, 1120), "ПИШИ В КОММЕНТАРИЯХ", font=font(int(40 * s) + 1, True), fill=GREY, anchor="mm")
+    d.text((540, 860), EP_LABEL, font=font(int(54 * s) + 1), fill=YEL, anchor="mm")
+    d.text((540, 1040), END_LINES[0], font=font(int(52 * s) + 1), fill=WHITE, anchor="mm")
+    d.text((540, 1120), END_LINES[1], font=font(int(40 * s) + 1, True), fill=GREY, anchor="mm")
 
 
 # ---------- главный цикл ----------
@@ -788,7 +798,7 @@ def build_timeline(timings):
 
 
 def state_at(t):
-    days, pct, budget = 365.0, 0.0, 0.0
+    days, pct, budget = INIT
     delta, delta_t = None, -1
     for seg in SEGMENTS:
         if t < seg["start"]: break
@@ -808,7 +818,7 @@ def state_at(t):
 
 
 def prime_state():
-    days, pct, budget = 365.0, 0.0, 0.0
+    days, pct, budget = INIT
     for seg in SEGMENTS:
         if "days" in seg: seg["_d0"] = days; days = seg["days"]
         if "pct" in seg: seg["_p0"] = pct; pct = seg["pct"]
@@ -843,7 +853,7 @@ def frame(t, total):
     draw_hud(img, days, pct, budget, delta, delta_t)
     draw_caption(img, seg["cap"], p)
     # водяной знак серии
-    d.text((W - 40, H - 120), "СЕРИЯ 1", font=font(30, True), fill=(90, 86, 96), anchor="rm")
+    d.text((W - 40, H - 120), EP_LABEL, font=font(30, True), fill=(90, 86, 96), anchor="rm")
     return img
 
 

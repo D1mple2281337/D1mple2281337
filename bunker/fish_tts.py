@@ -40,5 +40,5 @@ with open(lst, "w") as f:
         f.write(f"file '{os.path.abspath(pth)}'\n")
         if k < len(parts) - 1: f.write(f"file '{os.path.abspath(gap)}'\n")
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst, f"{outdir}/voice.wav"], check=True)
-json.dump({"segments": segs, "duration": t}, open("timings_fish.json", "w"), indent=1)
+json.dump({"segments": segs, "duration": t}, open(os.environ.get("TIMINGS_OUT", "timings_fish.json"), "w"), indent=1)
 for (a, b), p in zip(segs, paras): print(f"{a:6.2f}-{b:6.2f} {p[:50]}")

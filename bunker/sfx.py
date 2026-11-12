@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Синтез звуковых эффектов по таймингам. python3 sfx.py timings.json out.wav"""
+"""Синтез звуковых эффектов по таймингам. python3 sfx.py timings.json out.wav [ep2]"""
 import sys, json, numpy as np, wave
 sr=44100; tm=json.load(open(sys.argv[1]))["segments"]
 dur=tm[-1][1]+4; n=int(sr*dur); out=np.zeros(n); rng=np.random.default_rng(3)
@@ -24,32 +24,39 @@ def rain(d):
 def motor(d):
     t=tt(d); return 0.12*np.sign(np.sin(2*np.pi*38*t))*(0.6+0.4*np.sin(2*np.pi*3*t))*np.minimum(1,np.minimum(t/0.3,(d-t)/0.3))
 sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(__file__)))
-from render import SEGMENTS
+import importlib
+EP = importlib.import_module(sys.argv[3]) if len(sys.argv) > 3 else None
+import render
+SEGMENTS = render.SEGMENTS
 assert len(SEGMENTS) == len(tm), "число сегментов не совпадает с таймингами"
 idx = {}
 for k, sg in enumerate(SEGMENTS): idx.setdefault(sg["scene"], k)
 S = lambda name: tm[idx[name]][0] if idx[name] else 0.0
 L = lambda name: tm[idx[name]][1] - tm[idx[name]][0]
 nxt = lambda name: tm[idx[name] + 1][0]
-add(S("tv"), pop()); add(S("tv") + 1.2, pop())
-add(S("asteroid"), whoosh(1.5)); add(S("asteroid") + 0.9, pop())
-add(S("loan"), cash()); add(S("loan") + 0.8, thud())
-add(S("doubt"), whoosh(0.8))
-add(S("doubt2") + 0.2, thud()); add(S("doubt2") + 1.6, thud())
-add(S("list"), pop())
-for nm in ("city", "field2", "rain", "choice"): add(S(nm), pop())
-add(S("city_price") + 0.3, thud()); add(S("city_price"), whoosh(1.5))
-add(S("field") + 1.0, thud()); add(S("field"), cash())
-add(S("shovel") + 0.5, thud())
-add(S("excav"), motor(L("excav") + 0.3))
-add(S("pit"), cash()); add(S("pit") + 0.2, thud())
-add(S("rain"), rain(nxt("rain") - S("rain") + 0.8))
-add(S("flood") + 0.5, thud())
-add(S("pump") + 0.8, motor(L("pump") - 0.6) * 0.6)
-add(S("dry"), cash()); add(S("dry") + 0.8, thud())
-add(S("list2") + 0.5, pop())
-add(S("choice"), whoosh(0.5)); add(S("choice") + 0.15, whoosh(0.5)); add(S("choice") + 0.5, pop())
-add(S("choice_l"), pop()); add(S("choice_r"), pop())
+if EP:
+    EP.sfx_events(add, S, L, nxt, dict(thud=thud, pop=pop, cash=cash, whoosh=whoosh, boom=boom, rain=rain, motor=motor))
+else:
+    add(S("tv"), pop()); add(S("tv") + 1.2, pop())
+    add(S("asteroid"), whoosh(1.5)); add(S("asteroid") + 0.9, pop())
+    add(S("loan"), cash()); add(S("loan") + 0.8, thud())
+    add(S("doubt"), whoosh(0.8))
+    add(S("doubt2") + 0.2, thud()); add(S("doubt2") + 1.6, thud())
+    add(S("list"), pop())
+    for nm in ("city", "field2", "rain", "choice"): add(S(nm), pop())
+    add(S("city_price") + 0.3, thud()); add(S("city_price"), whoosh(1.5))
+    add(S("field") + 1.0, thud()); add(S("field"), cash())
+    add(S("shovel") + 0.5, thud())
+    add(S("excav"), motor(L("excav") + 0.3))
+    add(S("pit"), cash()); add(S("pit") + 0.2, thud())
+    add(S("rain"), rain(nxt("rain") - S("rain") + 0.8))
+    add(S("flood") + 0.5, thud())
+    add(S("pump") + 0.8, motor(L("pump") - 0.6) * 0.6)
+    add(S("dry"), cash()); add(S("dry") + 0.8, thud())
+    add(S("list2") + 0.5, pop())
+    add(S("choice"), whoosh(0.5)); add(S("choice") + 0.15, whoosh(0.5)); add(S("choice") + 0.5, pop())
+    add(S("choice_l"), pop()); add(S("choice_r"), pop())
+
 out=out/max(1,np.max(np.abs(out))/0.9)
 w=wave.open(sys.argv[2],'wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(sr)
 w.writeframes((out*32767).astype(np.int16).tobytes()); w.close()

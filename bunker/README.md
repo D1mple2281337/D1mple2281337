@@ -34,3 +34,14 @@ python3 sfx.py timings_fish.json audio/sfx_fish.wav && python3 music.py audio/mu
 # сведение — как выше, с audio/fish/voice.wav; затем:
 python3 render.py --timings timings_fish.json --audio audio/mix_fish_norm.wav --out out/bunker_ep1_fish.mp4
 ```
+
+## Серия 2 — зрители выбрали БЕТОН (`out/bunker_ep2.mp4`, обложка `out/cover_ep2.jpg`)
+Заливка бетона → проверка экскаватором → ограбление бытовки (остаётся 600 $) → выбор: **ЗАЙМ** или **СОСЕД**.
+Сценарий и сцены — `ep2.py` (переиспользует `render.py`), озвучка — `voice_script_ep2.txt`.
+```bash
+FISH_MODEL=s2.1-pro-free TIMINGS_OUT=timings_ep2.json python3 fish_tts.py voice_script_ep2.txt 48ec28a45588422b977a86460c11977f audio/fish_ep2
+python3 sfx.py timings_ep2.json audio/sfx_ep2.wav ep2 && python3 music.py audio/music_ep2.wav 63
+# сведение как выше (audio/fish_ep2/voice.wav -> audio/mix_ep2_norm.wav), затем:
+python3 ep2.py --timings timings_ep2.json --audio audio/mix_ep2_norm.wav --out out/bunker_ep2.mp4
+python3 cover_ep2.py out/cover_ep2.jpg
+```
