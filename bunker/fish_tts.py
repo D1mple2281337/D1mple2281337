@@ -6,8 +6,10 @@ import sys, os, re, json, subprocess, urllib.request, hashlib
 script, voice, outdir = sys.argv[1:4]
 model = os.environ.get("FISH_MODEL", "s1")
 os.makedirs(outdir, exist_ok=True)
-paras = [re.sub(r"\[[^\]]*\]", "", p).strip() for p in open(script, encoding="utf-8").read().split("\n\n") if p.strip()]
-GAP = 0.4
+raw = [p for p in open(script, encoding="utf-8").read().split("\n\n") if p.strip()]
+extra = [float(m.group(1)) if (m := re.search(r"\[pause ([0-9.]+)\]", p)) else 0.0 for p in raw]
+paras = [re.sub(r"\[[^\]]*\]", "", p).strip() for p in raw]
+GAP = float(os.environ.get("GAP", "0.4"))
 files = []
 for i, p in enumerate(paras):
     h = hashlib.md5(f"{model}|{voice}|{p}".encode()).hexdigest()[:10]
@@ -31,14 +33,20 @@ for i, fn in enumerate(files):
                     "-ar", "44100", "-ac", "1", tr], check=True)
     d = float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", tr]))
     segs.append([round(t, 3), round(t + d, 3)])
-    parts.append(tr); t += d + GAP
+    parts.append(tr); t += d + GAP + extra[i]
 gap = f"{outdir}/gap.wav"
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono", "-t", str(GAP), gap], check=True)
 lst = f"{outdir}/list.txt"
 with open(lst, "w") as f:
     for k, pth in enumerate(parts):
         f.write(f"file '{os.path.abspath(pth)}'\n")
-        if k < len(parts) - 1: f.write(f"file '{os.path.abspath(gap)}'\n")
+        if k < len(parts) - 1:
+            f.write(f"file '{os.path.abspath(gap)}'\n")
+            if extra[k] > 0:
+                eg = f"{outdir}/gap_{extra[k]}.wav"
+                subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono",
+                                "-t", str(extra[k]), eg], check=True)
+                f.write(f"file '{os.path.abspath(eg)}'\n")
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst, f"{outdir}/voice.wav"], check=True)
 json.dump({"segments": segs, "duration": t}, open(os.environ.get("TIMINGS_OUT", "timings_fish.json"), "w"), indent=1)
 for (a, b), p in zip(segs, paras): print(f"{a:6.2f}-{b:6.2f} {p[:50]}")

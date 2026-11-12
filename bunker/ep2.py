@@ -12,38 +12,64 @@ from render import (W, H, GROUND, SOIL_TOP, font, lerp, lc, clamp, ease_io, ease
 
 R.INIT = (330.0, 30.0, 17000.0)
 R.EP_LABEL = "СЕРИЯ 2"
-R.END_LINES = ("ЗАЙМ или СОСЕД?", "ПИШИ В КОММЕНТАРИЯХ")
+R.END_LINES = ("ЗАЙМ или СОСЕД? И КТО ВОР?", "ПИШИ В КОММЕНТАРИЯХ")
+ORIG_SCENE = R.render_scene          # сцены серии 1 — для «В прошлой серии»
+EP1_CARDS = list(R.CHOICE_CARDS)
 R.CHOICE_CARDS = [("ЗАЙМ", "loan", RED, 280, "10 000 $ СРАЗУ", "ВЕРНУТЬ ЗА 3 МЕС."),
-                  ("СОСЕД", "neighbor", GREEN, 800, "10 000 $", "МЕСТО В БУНКЕРЕ")]
+                  ("ДЯДЯ ГЕНА", "neighbor", GREEN, 800, "10 000 $", "МЕСТО В БУНКЕРЕ")]
 
 R.SEGMENTS[:] = [
-    dict(cap="Вы выбрали *бетон*. Значит, строю надёжно.", scene="recap"),
-    dict(cap="Пункт третий: *стены*.", scene="walls", tag="3. СТЕНЫ"),
+    dict(cap="В прошлой серии я взял кредит на *25 000 $*, потому что через год — !конец света!.",
+         scene="prev_loan"),
+    dict(cap="Купил поле, выкопал котлован и спросил вас: *бетон* или *контейнер*?", scene="prev_choice"),
+    dict(cap="Вы выбрали *бетон*. С большим отрывом.", scene="votes"),
+    dict(cap="Значит, строю надёжно. Пункт третий: *стены*.", scene="recap", tag="3. СТЕНЫ"),
     dict(cap="Сначала арматура и опалубка. Минус *3 000 $*.", scene="rebar", tag="3. СТЕНЫ",
-         budget=14000, delta=-3000),
+         budget=14000, delta=-3000, days=327),
+    dict(cap="На второй день через забор заглядывает *сосед*. Дядя Гена.", scene="gena_fence"),
+    dict(cap="Приносит чай, помогает вязать арматуру.", scene="gena_help"),
+    dict(cap="И очень интересуется: сколько стоит бункер и !где я храню деньги!.", scene="gena_ask"),
     dict(cap="На участок заезжают *6 бетономешалок*.", scene="mixers", tag="3. СТЕНЫ"),
     dict(cap="Заливаю стены и потолок. Минус *5 500 $*.", scene="pour", tag="3. СТЕНЫ",
-         budget=8500, delta=-5500, pct=50),
-    dict(cap="Бетону нужно *28 дней*, чтобы набрать прочность.", scene="cure", tag="3. СТЕНЫ", days=300),
+         budget=8500, delta=-5500, pct=50, days=322),
+    dict(cap="Бетону нужно *28 дней*, чтобы набрать прочность.", scene="cure", tag="3. СТЕНЫ", days=294),
+    dict(cap="Пока жду — включаю *радио*.", scene="radio"),
+    dict(cap="Учёные пересчитали траекторию астероида. Вероятность удара — !97 %!.", scene="radio97"),
+    dict(cap="Девяносто семь. Значит, есть *3 %*, что всё это зря.", scene="three"),
+    dict(cap="И в тот же день приходит письмо из банка: первый платёж — !через месяц!.", scene="letter"),
+    dict(cap="Платить я не собираюсь. *Строю дальше*.", scene="tear"),
     dict(cap="Проверка: загоняю на крышу *экскаватор*.", scene="test", tag="ПРОВЕРКА"),
     dict(cap="Держит. Ни одной *трещины*.", scene="test_ok", tag="ПРОВЕРКА", pct=60),
-    dict(cap="Деньги я храню в *бытовке*, прямо на участке.", scene="shed"),
+    dict(cap="Бункер готов на *60 %*. Впервые за месяц я сплю спокойно.", scene="calm"),
+    dict(cap="Деньги я храню в *бытовке*, прямо на участке. И ставлю *камеру*.", scene="shed"),
     dict(cap="Ночью слышу !шум!.", scene="night"),
-    dict(cap="Утром дверь бытовки !выбита!.", scene="broken", days=296),
+    dict(cap="Утром дверь бытовки !выбита!.", scene="broken", days=290),
     dict(cap="Украли генератор, инструменты и !почти все деньги!.", scene="stolen",
          budget=600, delta=-7900),
     dict(cap="Осталось !600 $!.", scene="left"),
+    dict(cap="Смотрю запись с *камеры*.", scene="cam"),
+    dict(cap="Запись обрывается на !третьей секунде!. Вор первым украл генератор.", scene="cam_cut"),
+    dict(cap="Но в кадре видно одно: *зелёный резиновый сапог*.", scene="boot"),
+    dict(cap="Звоню в *полицию*.", scene="phone"),
+    dict(cap="Говорят: до конца света !9 месяцев!, кому сейчас нужна твоя бытовка.", scene="police"),
+    dict(cap="Иду к *дяде Гене*. Он сидит на крыльце.", scene="porch"),
+    dict(cap="В обычных *тапочках*. Сапог нигде нет.", scene="slippers"),
+    dict(cap="Но у крыльца стоят сапоги. !Зелёные!. И слишком чистые — будто их только что вымыли.",
+         scene="boots_clean"),
     dict(cap="А впереди ещё дверь, вентиляция и запас еды.", scene="todo"),
     dict(cap="Без этого бункер — просто !бетонная коробка! в земле.", scene="box"),
+    dict(cap="Вечером звонит !незнакомый номер!.", scene="call2"),
+    dict(cap="«Слышал, у тебя проблемы с деньгами. *Могу помочь*».", scene="call2b"),
     dict(cap="Денег взять негде. Осталось два варианта, и оба !плохие!.", scene="choice", tag="ВЫБОР"),
     dict(cap="Первый: *займ* у серьёзных людей. *10 000 $* сразу, но вернуть через !3 месяца!.",
          scene="choice_l", tag="ВЫБОР"),
     dict(cap="А если конец света не наступит, они придут за мной !раньше астероида!.",
          scene="choice_l2", tag="ВЫБОР"),
-    dict(cap="Второй: *сосед*. Он даст *10 000 $*, но хочет !место в бункере!.",
+    dict(cap="Второй: *дядя Гена*. Он предлагает *10 000 $*, но хочет !место в бункере!.",
          scene="choice_r", tag="ВЫБОР"),
-    dict(cap="Только вот он слишком часто спрашивал, !где я храню деньги!.", scene="choice_r2", tag="ВЫБОР"),
+    dict(cap="Откуда у пенсионера *10 000 $* — через день после !ограбления!?", scene="choice_r2", tag="ВЫБОР"),
     dict(cap="Пиши в комментариях: *займ* или *сосед*.", scene="choice_vote", tag="ВЫБОР"),
+    dict(cap="А кто, по-твоему, !вор!? Тоже пиши.", scene="who", tag="ВЫБОР"),
     dict(cap="Что будет дальше — решаете *вы*.", scene="choice_vote2", tag="ВЫБОР"),
 ]
 
@@ -146,7 +172,7 @@ def icon_loan(d, cx, cy, s):
 
 def icon_neighbor(d, cx, cy, s, sus=False):
     d.ellipse([cx - 80 * s, cy - 100 * s, cx + 80 * s, cy + 60 * s], fill=(232, 190, 150))
-    d.chord([cx - 84 * s, cy - 110 * s, cx + 84 * s, cy + 10 * s], 180, 360, fill=(90, 60, 40))
+    d.chord([cx - 84 * s, cy - 110 * s, cx + 84 * s, cy + 10 * s], 180, 360, fill=(190, 190, 196))
     ex = 18 * s if sus else 0
     for side in (-1, 1):
         x = cx + side * 34 * s
@@ -155,6 +181,7 @@ def icon_neighbor(d, cx, cy, s, sus=False):
         if sus:
             d.line([(x - 22 * s, cy - 44 * s), (x + 22 * s, cy - 36 * s)], fill=(60, 40, 30), width=int(6 * s))
     d.arc([cx - 36 * s, cy - 6 * s, cx + 36 * s, cy + 34 * s], 20, 160, fill=(120, 50, 40), width=int(6 * s))
+    d.chord([cx - 44 * s, cy - 4 * s, cx + 44 * s, cy + 24 * s], 180, 360, fill=(190, 190, 196))
     d.rectangle([cx - 90 * s, cy + 60 * s, cx + 90 * s, cy + 100 * s], fill=(60, 120, 90))
 
 
@@ -295,7 +322,7 @@ def render_scene(img, seg, i, lt, p, gt, st):
         if sc == "choice_l2":
             R.draw_stamp(img, "ДОЛГ × 2", lt - 0.3, cy=960)
         if sc == "choice_r2":
-            R.draw_stamp(img, "ЭТО ОН УКРАЛ?", lt - 0.4, col=(200, 120, 20), cy=960)
+            R.draw_stamp(img, "ОТКУДА ДЕНЬГИ?", lt - 0.4, col=(200, 120, 20), cy=960)
         if sc == "choice_vote2":
             s = back_out(lt / 0.5)
             d.text((540, 960), "СЕРИЯ 3 — ВЫБИРАЕТЕ ВЫ", font=font(int(46 * s) + 1), fill=YEL, anchor="mm")
@@ -336,6 +363,373 @@ def sfx_events(add, S, L, nxt, fx):
     add(S("choice"), fx["whoosh"](0.5)); add(S("choice") + 0.15, fx["whoosh"](0.5)); add(S("choice") + 0.5, fx["pop"]())
     add(S("choice_l"), fx["pop"]()); add(S("choice_l2") + 0.3, fx["thud"]())
     add(S("choice_r"), fx["pop"]()); add(S("choice_r2") + 0.4, fx["thud"]())
+
+
+
+# ======== расширенная версия серии: новые сцены ========
+BOOT = (60, 150, 70)
+
+
+def draw_gena(d, x, y, s=1.0, t=0.0, boots=True, cup=False, face=1, sus=False):
+    """Сосед дядя Гена: седой, с усами, в зелёных резиновых сапогах (или тапочках)."""
+    by = y - 70 * s
+    d.line([(x - 10 * s, by), (x - 12 * s, y - 6 * s)], fill=(70, 70, 80), width=int(16 * s))
+    d.line([(x + 10 * s, by), (x + 12 * s, y - 6 * s)], fill=(70, 70, 80), width=int(16 * s))
+    if boots:
+        for sx in (-1, 1):
+            d.rounded_rectangle([x + sx * 12 * s - 13 * s, y - 40 * s, x + sx * 12 * s + 13 * s + (8 * s if sx > 0 else 0),
+                                 y + 4 * s], radius=int(5 * s), fill=BOOT)
+    else:
+        for sx in (-1, 1):
+            d.ellipse([x + sx * 14 * s - 16 * s, y - 6 * s, x + sx * 14 * s + 18 * s, y + 6 * s], fill=(90, 120, 200))
+    d.rounded_rectangle([x - 34 * s, by - 92 * s, x + 34 * s, by + 4 * s], radius=int(16 * s), fill=(110, 70, 60))
+    d.line([(x - 32 * s, by - 80 * s), (x - 40 * s, by - 20 * s)], fill=(110, 70, 60), width=int(14 * s))
+    d.line([(x + 32 * s, by - 80 * s), (x + 42 * s * face, by - 30 * s)], fill=(110, 70, 60), width=int(14 * s))
+    if cup:
+        cx = x + 46 * s * face
+        d.rectangle([cx - 12 * s, by - 46 * s, cx + 12 * s, by - 18 * s], fill=WHITE)
+        for k in range(3):
+            d.line([(cx - 6 * s + k * 6 * s, by - 56 * s - k * 4), (cx - 6 * s + k * 6 * s, by - 70 * s - k * 4)],
+                   fill=(200, 200, 210), width=3)
+    hy = by - 122 * s
+    d.ellipse([x - 27 * s, hy - 28 * s, x + 27 * s, hy + 28 * s], fill=(236, 190, 152))
+    d.chord([x - 29 * s, hy - 32 * s, x + 29 * s, hy + 6 * s], 180, 360, fill=(196, 196, 202))
+    ex = x + 8 * s * face + (6 * s if sus else 0)
+    d.ellipse([ex - 4 * s, hy + 0 * s, ex + 4 * s, hy + 8 * s], fill=(30, 30, 30))
+    d.ellipse([ex + 12 * s * face - 4 * s, hy, ex + 12 * s * face + 4 * s, hy + 8 * s], fill=(30, 30, 30))
+    d.chord([x - 10 * s + 8 * s * face, hy + 10 * s, x + 22 * s + 8 * s * face, hy + 24 * s], 180, 360,
+            fill=(196, 196, 202))
+
+
+def bubble(d, x, y, text, size=40, col=(246, 244, 236), tcol=(30, 30, 40), tail=-1):
+    f = font(size)
+    tw = d.textlength(text, font=f)
+    d.rounded_rectangle([x - tw / 2 - 24, y - size * 0.9, x + tw / 2 + 24, y + size * 0.9], radius=18, fill=col)
+    d.polygon([(x + tail * 30, y + size * 0.8), (x + tail * 70, y + size * 1.8), (x + tail * 70 - tail * 40,
+               y + size * 0.8)], fill=col)
+    d.text((x, y), text, font=f, fill=tcol, anchor="mm")
+
+
+def bg(img, gt, stage):
+    d = R.draw_sky(img, gt, 0.0)
+    R.draw_landscape(d); R.draw_ground(d); R.draw_fence(d, 60, 250)
+    if stage == "rebar":
+        draw_bunker(d, walls=0, rebar=True, forms=True)
+    elif stage == "built":
+        draw_bunker(d, walls=1, roof=True)
+    return d
+
+
+def draw_radio(d, x, y, t, on=True):
+    d.rounded_rectangle([x - 110, y - 120, x + 110, y], radius=18, fill=(150, 90, 50))
+    d.ellipse([x - 90, y - 100, x - 10, y - 20], fill=(60, 40, 30))
+    for k in range(4):
+        d.line([(x + 20, y - 95 + k * 18), (x + 90, y - 95 + k * 18)], fill=(230, 210, 160), width=5)
+    d.line([(x + 70, y - 120), (x + 130, y - 240)], fill=(160, 160, 170), width=5)
+    if on:
+        for k in range(3):
+            r = 40 + k * 40 + (t * 80) % 40
+            d.arc([x - 130 - r, y - 160 - r, x - 130 + r, y - 160 + r], 200, 280, fill=(220, 220, 240), width=5)
+
+
+def draw_house(d, x):
+    y = GROUND
+    d.rectangle([x - 200, y - 260, x + 200, y], fill=(150, 100, 60))
+    for k in range(y - 250, y, 28):
+        d.line([(x - 200, k), (x + 200, k)], fill=(130, 84, 50), width=3)
+    d.polygon([(x - 230, y - 260), (x, y - 400), (x + 230, y - 260)], fill=(110, 110, 120))
+    d.rectangle([x + 60, y - 200, x + 160, y - 110], fill=(250, 220, 140))
+    d.line([(x + 110, y - 200), (x + 110, y - 110)], fill=(150, 100, 60), width=6)
+    d.rectangle([x - 150, y - 190, x - 60, y], fill=(90, 60, 40))
+    d.rectangle([x - 220, y - 40, x + 20, y], fill=(120, 80, 50))   # крыльцо
+
+
+def scene_ext(img, seg, i, lt, p, gt, st):
+    sc = seg["scene"]
+    dur = seg["dur"]
+    if sc in ("prev_loan", "prev_choice"):
+        fake = dict(seg, scene="loan" if sc == "prev_loan" else "choice_vote")
+        cards = R.CHOICE_CARDS
+        R.CHOICE_CARDS = EP1_CARDS
+        ORIG_SCENE(img, fake, i, lt + (2 if sc == "prev_loan" else 0), p, gt, st)
+        R.CHOICE_CARDS = cards
+        # «плёнка»: тонировка, рамка, РАНЕЕ
+        ov = Image.new("RGBA", (W, H), (60, 40, 20, 70))
+        img.paste(ov, (0, 0), ov)
+        d = ImageDraw.Draw(img)
+        d.rectangle([20, 200, W - 20, R.SOIL_BOT - 10], outline=(240, 236, 226), width=6)
+        if int(gt * 2) % 2 == 0:
+            d.ellipse([50, 225, 80, 255], fill=RED)
+        d.text((95, 240), "В ПРОШЛОЙ СЕРИИ", font=font(40), fill=WHITE, anchor="lm")
+        return True
+    if sc == "calm":
+        d = bg(img, gt, "built")
+        R.draw_hero(d, 760, GROUND + 4, 1.3, gt, face=-1)
+        for k in range(3):
+            ft = (lt * 0.6 + k / 3) % 1
+            d.text((820 + ft * 120, 640 - ft * 260), "Z", font=font(int(50 + ft * 40)),
+                   fill=lc((40, 40, 60), WHITE, 1 - ft), anchor="mm")
+        d.text((450, 470), "60 %", font=font(150), fill=GREEN, anchor="mm", stroke_width=10,
+               stroke_fill=(20, 16, 20))
+        return True
+    if sc == "boots_clean":
+        d = R.draw_sky(img, gt, 0.0)
+        R.draw_landscape(d); R.draw_ground(d)
+        draw_house(d, 420)
+        draw_gena(d, 300, GROUND + 4, 1.4, gt, boots=False, face=1, sus=True)
+        R.draw_hero(d, 960, GROUND + 4, 1.2, gt, face=-1)
+        # сапоги у крыльца + блеск
+        for bx in (640, 700):
+            d.rounded_rectangle([bx - 22, GROUND - 90, bx + 14, GROUND], radius=8, fill=(80, 190, 95))
+            d.rounded_rectangle([bx - 22, GROUND - 30, bx + 34, GROUND], radius=10, fill=(80, 190, 95))
+        for k in range(4):
+            a = gt * 4 + k * 1.6
+            x, y = 670 + math.cos(a) * 70, GROUND - 120 + math.sin(a) * 40
+            r = 10 + 6 * math.sin(gt * 8 + k)
+            d.polygon([(x, y - r * 2), (x + r * 0.5, y), (x, y + r * 2), (x - r * 0.5, y)], fill=WHITE)
+            d.polygon([(x - r * 2, y), (x, y - r * 0.5), (x + r * 2, y), (x, y + r * 0.5)], fill=WHITE)
+        if lt > 1.4:
+            R.draw_stamp(img, "СЛИШКОМ ЧИСТЫЕ", lt - 1.4, col=(40, 140, 60), cy=520)
+        return True
+    if sc in ("call2", "call2b"):
+        d = bg(img, gt, "built")
+        draw_shed(d, 880, broken=True)
+        ov = Image.new("RGBA", (W, H), (10, 0, 30, 90)); img.paste(ov, (0, 0), ov)
+        d = ImageDraw.Draw(img)
+        R.draw_hero(d, 560, GROUND + 4, 1.4, gt)
+        d.rounded_rectangle([590, GROUND - 330, 616, GROUND - 280], radius=6, fill=(30, 30, 34))
+        if sc == "call2":
+            s_ = back_out(lt / 0.4)
+            d.rounded_rectangle([540 - 200 * s_, 420 - 220 * s_, 540 + 200 * s_, 420 + 220 * s_], radius=30,
+                                fill=(20, 20, 26), outline=(90, 90, 100), width=6)
+            d.text((540, 340), "НЕИЗВЕСТНЫЙ", font=font(int(44 * s_) + 1), fill=WHITE, anchor="mm")
+            d.text((540, 400), "НОМЕР", font=font(int(44 * s_) + 1), fill=WHITE, anchor="mm")
+            d.text((540, 480), "+7 *** *** ** 66", font=font(int(34 * s_) + 1, True), fill=GREY, anchor="mm")
+            if int(gt * 4) % 2 == 0:
+                d.ellipse([500, 540, 580, 620], fill=(40, 180, 80))
+        else:
+            bubble(d, 540, 430, "МОГУ ПОМОЧЬ…", 54, col=(20, 20, 26), tcol=RED, tail=1)
+        return True
+    if sc == "votes":
+        d = bg(img, gt, None)
+        draw_bunker(d, walls=0)
+        k = ease_out(clamp((lt - 0.2) / 1.4))
+        for j, (lab, val, col) in enumerate([("БЕТОН", 81, BLUE), ("КОНТЕЙНЕР", 19, YEL)]):
+            y = 470 + j * 190
+            d.text((90, y - 60), lab, font=font(52), fill=col, anchor="lm")
+            d.rounded_rectangle([90, y - 20, 990, y + 60], radius=20, fill=(30, 34, 52))
+            wv = 900 * val / 100 * k
+            if wv > 30:
+                d.rounded_rectangle([90, y - 20, 90 + wv, y + 60], radius=20, fill=col)
+            d.text((990, y - 60), f"{int(val * k)} %", font=font(52), fill=WHITE, anchor="rm")
+        if lt > 1.5:
+            R.draw_stamp(img, "БЕТОН", lt - 1.5, col=(40, 120, 220), cy=900)
+        return True
+    if sc in ("gena_fence", "gena_help", "gena_ask"):
+        d = bg(img, gt, "rebar")
+        if sc == "gena_fence":
+            gy = lerp(GROUND + 200, GROUND + 4, ease_out(clamp(lt / 0.8)))
+            tmp = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+            draw_gena(ImageDraw.Draw(tmp), 160, gy, 1.3, gt)
+            tmp.crop((0, 0, W, GROUND - 60)).load()
+            img.paste(tmp.crop((0, 0, W, GROUND - 50)), (0, 0), tmp.crop((0, 0, W, GROUND - 50)))
+            d = ImageDraw.Draw(img)
+            R.draw_fence(d, 60, 250)
+            R.draw_hero(d, 860, GROUND + 4, 1.3, gt, face=-1)
+            if lt > 0.9:
+                bubble(d, 300, 520, "ЗДОРОВО, СОСЕД!", 40, tail=-1)
+        else:
+            draw_gena(d, 260, GROUND + 4, 1.3, gt, cup=(sc == "gena_help"), sus=(sc == "gena_ask"))
+            R.draw_hero(d, 860, GROUND + 4, 1.3, gt, face=-1)
+            if sc == "gena_help":
+                d.text((540, 450), "+1 ПОМОЩНИК", font=font(60), fill=GREEN, anchor="mm", stroke_width=6,
+                       stroke_fill=(20, 16, 20))
+            else:
+                bubble(d, 330, 470, "А ДЕНЬГИ ГДЕ ХРАНИШЬ?", 38, tail=-1)
+                if lt > 1.2:
+                    d.text((330, 610), "?", font=font(90), fill=YEL, anchor="mm")
+        return True
+    if sc in ("radio", "radio97", "three"):
+        d = bg(img, gt, "built")
+        draw_radio(d, 300, GROUND, gt, on=True)
+        R.draw_hero(d, 860, GROUND + 4, 1.3, gt, face=-1)
+        if sc == "radio97":
+            pulse = 1 + 0.05 * math.sin(gt * 9)
+            d.text((620, 520), "97 %", font=font(int(190 * pulse)), fill=RED, anchor="mm", stroke_width=12,
+                   stroke_fill=(20, 16, 20))
+            d.text((620, 660), "ВЕРОЯТНОСТЬ УДАРА", font=font(44), fill=WHITE, anchor="mm")
+        if sc == "three":
+            d.text((620, 520), "3 %", font=font(220), fill=YEL, anchor="mm", stroke_width=12,
+                   stroke_fill=(20, 16, 20))
+            d.text((620, 670), "ЧТО ВСЁ ЗРЯ", font=font(52), fill=WHITE, anchor="mm")
+        return True
+    if sc in ("letter", "tear"):
+        d = bg(img, gt, "built")
+        R.draw_hero(d, 860, GROUND + 4, 1.3, gt, face=-1)
+        cx, cy = 480, 560
+        if sc == "letter":
+            s = back_out(lt / 0.5)
+            d.rectangle([cx - 260 * s, cy - 170 * s, cx + 260 * s, cy + 170 * s], fill=(246, 244, 236))
+            d.polygon([(cx - 260 * s, cy - 170 * s), (cx, cy), (cx + 260 * s, cy - 170 * s)], fill=(226, 222, 212))
+            d.text((cx, cy + 40 * s), "БАНК", font=font(int(50 * s) + 1), fill=(40, 40, 60), anchor="mm")
+            d.text((cx, cy + 110 * s), "ПЛАТЁЖ ЧЕРЕЗ 30 ДНЕЙ", font=font(int(34 * s) + 1, True), fill=RED, anchor="mm")
+        else:
+            for k in range(8):
+                ft = clamp(lt / 1.5)
+                ang = k * 0.8
+                x = cx + math.cos(ang) * 300 * ft; y = cy + math.sin(ang) * 120 * ft + 400 * ft * ft
+                d.polygon([(x - 40, y - 30), (x + 50, y - 20), (x + 30, y + 40), (x - 30, y + 30)], fill=(246, 244, 236))
+            R.draw_stamp(img, "НЕ ПЛАЧУ", lt - 0.3, cy=480)
+        return True
+    if sc == "shed":
+        render_scene(img, seg, i, lt, p, gt, st)
+        d = ImageDraw.Draw(img)
+        if lt > 1.5:
+            d.rectangle([1046, GROUND - 330, 1056, GROUND], fill=(80, 80, 86))
+            d.rounded_rectangle([990, GROUND - 360, 1060, GROUND - 320], radius=8, fill=(40, 40, 46))
+            d.ellipse([975, GROUND - 352, 1000, GROUND - 328], fill=(20, 20, 24))
+            if int(gt * 3) % 2 == 0:
+                d.ellipse([1040, GROUND - 354, 1052, GROUND - 342], fill=RED)
+        return True
+    if sc in ("cam", "cam_cut", "boot"):
+        img.paste((10, 14, 12), (0, 0, W, R.SOIL_BOT))
+        d = ImageDraw.Draw(img)
+        # монитор
+        d.rounded_rectangle([60, 220, W - 60, 1000], radius=26, fill=(36, 36, 42))
+        scr = Image.new("RGB", (W - 160, 680), (30, 40, 34))
+        sd = ImageDraw.Draw(scr)
+        sd.rectangle([0, 470, W, 680], fill=(40, 56, 42))
+        sd.rectangle([520, 220, 800, 470], fill=(60, 80, 70))       # бытовка в ч/б-зелёном
+        sd.rectangle([560, 300, 640, 470], fill=(40, 52, 46))
+        cut = sc != "cam" and lt > 0.6 if sc == "cam_cut" else sc == "boot"
+        if sc == "cam" or (sc == "cam_cut" and not cut):
+            tx = 900 - lt * 120
+            sd.rectangle([tx - 30, 300, tx + 30, 470], fill=(12, 16, 14))
+            sd.ellipse([tx - 26, 250, tx + 26, 302], fill=(12, 16, 14))
+        if sc == "boot":
+            z = 1 + 0.15 * ease_out(clamp(lt / 1.0))
+            bx, by = 440, 480
+            sd.rounded_rectangle([bx - 60 * z, by - 150 * z, bx + 20 * z, by], radius=12, fill=(70, 160, 80))
+            sd.rounded_rectangle([bx - 60 * z, by - 50 * z, bx + 80 * z, by], radius=16, fill=(70, 160, 80))
+            sd.ellipse([bx - 140 * z, by - 230 * z, bx + 160 * z, by + 60 * z], outline=RED, width=8)
+        # шум
+        for k in range(900):
+            x = R.rnd.randrange(scr.width); y = R.rnd.randrange(scr.height)
+            c = R.rnd.randrange(30, 120)
+            sd.point((x, y), fill=(c, c + 10, c))
+        if cut and sc == "cam_cut":
+            scr = Image.effect_noise((W - 160, 680), 90).convert("RGB")
+            sd = ImageDraw.Draw(scr)
+            sd.rectangle([180, 290, scr.width - 180, 390], fill=(10, 10, 10))
+            sd.text((scr.width / 2, 340), "НЕТ СИГНАЛА", font=font(60), fill=WHITE, anchor="mm")
+        sd.text((24, 30), "CAM 1", font=font(36), fill=WHITE)
+        sec = 3 if sc != "cam" else min(3, int(lt * 1.5))
+        sd.text((scr.width - 24, 30), f"03:12:0{sec}", font=font(36), fill=WHITE, anchor="ra")
+        if int(gt * 2) % 2 == 0:
+            sd.ellipse([24, scr.height - 64, 54, scr.height - 34], fill=RED)
+            sd.text((66, scr.height - 50), "REC", font=font(32), fill=WHITE, anchor="lm")
+        img.paste(scr, (80, 240))
+        if sc == "boot" and lt > 0.8:
+            R.draw_stamp(img, "ЗЕЛЁНЫЙ САПОГ", lt - 0.8, col=(40, 140, 60), cy=1120)
+        return True
+    if sc in ("phone", "police"):
+        d = bg(img, gt, "built")
+        draw_shed(d, 880, broken=True)
+        R.draw_hero(d, 560, GROUND + 4, 1.4, gt)
+        # телефон у уха
+        d.rounded_rectangle([590, GROUND - 330, 616, GROUND - 280], radius=6, fill=(30, 30, 34))
+        if sc == "phone":
+            if int(gt * 4) % 2 == 0:
+                d.text((700, GROUND - 400), "ДЗЫНЬ", font=font(50), fill=YEL, anchor="mm")
+        else:
+            bubble(d, 540, 420, "КОМУ НУЖНА", 46, col=(40, 70, 160), tcol=WHITE, tail=1)
+            bubble(d, 540, 540, "ТВОЯ БЫТОВКА?", 46, col=(40, 70, 160), tcol=WHITE, tail=1)
+            R.draw_stamp(img, "ДЕЛО ЗАКРЫТО", lt - 1.4, cy=700)
+        return True
+    if sc in ("porch", "slippers"):
+        d = R.draw_sky(img, gt, 0.0)
+        R.draw_landscape(d); R.draw_ground(d)
+        draw_house(d, 420)
+        draw_gena(d, 300, GROUND + 4, 1.4, gt, boots=False, face=1)
+        if sc == "porch":
+            wt = clamp(lt / 1.6)
+            R.draw_hero(d, lerp(1150, 820, ease_out(wt)), GROUND + 4, 1.3, gt, walk=wt < 1, face=-1)
+            if lt > 1.4:
+                bubble(d, 300, 470, "ЧЕГО ТЕБЕ?", 42, tail=-1)
+        else:
+            R.draw_hero(d, 820, GROUND + 4, 1.3, gt, face=-1)
+            # лупа на тапочках
+            d.ellipse([170, GROUND - 120, 430, GROUND + 140], outline=YEL, width=10)
+            d.line([(410, GROUND + 110), (520, GROUND + 220)], fill=YEL, width=18)
+            d.text((300, 380), "ТАПОЧКИ", font=font(70), fill=YEL, anchor="mm", stroke_width=8,
+                   stroke_fill=(20, 16, 20))
+            d.text((300, 470), "А САПОГИ ГДЕ?", font=font(44), fill=WHITE, anchor="mm")
+        return True
+    if sc == "who":
+        SUS["on"] = True
+        R.draw_choice(img, 5.0, gt, focus=None, vote=True)
+        d = ImageDraw.Draw(img)
+        d.rounded_rectangle([290, 880, 790, 1000], radius=20, fill=(40, 140, 60))
+        d.text((540, 940), "КТО ВОР?  🥾", font=font(56), fill=WHITE, anchor="mm")
+        return False   # фон уже нарисован в draw_choice? — нет, нарисуем ниже
+    return None
+
+
+_base_scene = render_scene
+
+
+def render_scene2(img, seg, i, lt, p, gt, st):
+    sc = seg["scene"]
+    if sc == "who":
+        _base_scene(img, dict(seg, scene="choice_vote"), i, lt, p, gt, st)
+        d = ImageDraw.Draw(img)
+        s = back_out(lt / 0.5)
+        d.rounded_rectangle([540 - 260 * s, 950 - 60 * s, 540 + 260 * s, 950 + 60 * s], radius=20,
+                            fill=(40, 140, 60))
+        d.text((540, 950), "КТО ВОР?", font=font(int(60 * s) + 1), fill=WHITE, anchor="mm")
+        return
+    if sc in ("choice_r2", "choice_vote2", "choice_vote"):
+        SUS["on"] = sc != "choice_vote"
+    if scene_ext(img, seg, i, lt, p, gt, st) is None:
+        _base_scene(img, seg, i, lt, p, gt, st)
+
+
+R.render_scene = render_scene2
+
+
+def sfx_events(add, S, L, nxt, fx):
+    add(S("prev_loan"), fx["whoosh"](0.8)); add(S("prev_loan") + 0.4, fx["thud"]())
+    add(S("prev_choice"), fx["whoosh"](0.6))
+    add(S("votes"), fx["whoosh"](1.2)); add(S("votes") + 1.5, fx["thud"]())
+    add(S("recap"), fx["pop"]())
+    add(S("rebar"), fx["cash"]()); add(S("rebar") + 1.3, fx["thud"]())
+    add(S("gena_fence"), fx["pop"]()); add(S("gena_ask") + 1.2, fx["pop"]())
+    add(S("mixers"), fx["motor"](L("mixers") + 0.4))
+    add(S("pour"), fx["motor"](L("pour")) * 0.7); add(S("pour"), fx["cash"]())
+    add(S("cure"), fx["whoosh"](1.5))
+    add(S("radio"), fx["rain"](L("radio") + 0.4) * 0.6)
+    add(S("radio97"), fx["boom"]() * 0.4); add(S("three"), fx["pop"]())
+    add(S("letter"), fx["pop"]()); add(S("tear"), fx["whoosh"](0.8)); add(S("tear") + 0.3, fx["thud"]())
+    add(S("test"), fx["pop"]()); add(S("test") + 0.8, fx["thud"]()); add(S("test"), fx["motor"](L("test")) * 0.6)
+    add(S("test_ok") + 0.2, fx["thud"]())
+    add(S("shed"), fx["pop"]()); add(S("shed") + 1.5, fx["pop"]())
+    add(S("night") + 0.3, fx["thud"]() * 0.6); add(S("night") + 0.9, fx["thud"]() * 0.8)
+    add(S("broken") + 0.6, fx["thud"]())
+    add(S("stolen") + 0.2, fx["thud"]()); add(S("stolen") + 0.6, fx["whoosh"](1.2))
+    add(S("left"), fx["boom"]() * 0.5)
+    add(S("cam"), fx["rain"](L("cam") + 0.4) * 0.4)
+    add(S("cam_cut") + 0.6, fx["rain"](1.5) * 1.5)
+    add(S("boot") + 0.8, fx["thud"]())
+    add(S("phone"), fx["cash"]()); add(S("phone") + 0.5, fx["cash"]())
+    add(S("police") + 1.4, fx["thud"]())
+    add(S("slippers"), fx["pop"]())
+    add(S("todo"), fx["pop"]()); add(S("box") + 0.5, fx["thud"]())
+    add(S("choice"), fx["whoosh"](0.5)); add(S("choice") + 0.15, fx["whoosh"](0.5)); add(S("choice") + 0.5, fx["pop"]())
+    add(S("choice_l"), fx["pop"]()); add(S("choice_l2") + 0.3, fx["thud"]())
+    add(S("choice_r"), fx["pop"]()); add(S("choice_r2") + 0.4, fx["thud"]())
+    add(S("who"), fx["pop"]())
+    add(S("calm"), fx["whoosh"](1.0)); add(S("boots_clean") + 1.4, fx["thud"]())
+    add(S("call2"), fx["cash"]()); add(S("call2") + 0.6, fx["cash"]()); add(S("call2b"), fx["boom"]() * 0.3)
 
 
 if __name__ == "__main__":

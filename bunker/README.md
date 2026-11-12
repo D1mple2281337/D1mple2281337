@@ -36,11 +36,12 @@ python3 render.py --timings timings_fish.json --audio audio/mix_fish_norm.wav --
 ```
 
 ## Серия 2 — зрители выбрали БЕТОН (`out/bunker_ep2.mp4`, обложка `out/cover_ep2.jpg`)
-Заливка бетона → проверка экскаватором → ограбление бытовки (остаётся 600 $) → выбор: **ЗАЙМ** или **СОСЕД**.
+«В прошлой серии» → итоги голосования → сосед дядя Гена → заливка бетона → радио «удар 97 %» и письмо банка → ограбление (600 $) → запись камеры: зелёный сапог → полиция → Гена в тапочках, сапоги слишком чистые → звонок «могу помочь» → выбор: **ЗАЙМ** или **ДЯДЯ ГЕНА** + «кто вор?». ~2:20.
+Паузы: `[pause N]` в конце абзаца `voice_script_ep2.txt`; общий интервал — `GAP=0.5`.
 Сценарий и сцены — `ep2.py` (переиспользует `render.py`), озвучка — `voice_script_ep2.txt`.
 ```bash
-FISH_MODEL=s2.1-pro-free TIMINGS_OUT=timings_ep2.json python3 fish_tts.py voice_script_ep2.txt 48ec28a45588422b977a86460c11977f audio/fish_ep2
-python3 sfx.py timings_ep2.json audio/sfx_ep2.wav ep2 && python3 music.py audio/music_ep2.wav 63
+GAP=0.5 FISH_MODEL=s2.1-pro-free TIMINGS_OUT=timings_ep2.json python3 fish_tts.py voice_script_ep2.txt 48ec28a45588422b977a86460c11977f audio/fish_ep2
+python3 sfx.py timings_ep2.json audio/sfx_ep2.wav ep2 && python3 music.py audio/music_ep2.wav 143
 # сведение как выше (audio/fish_ep2/voice.wav -> audio/mix_ep2_norm.wav), затем:
 python3 ep2.py --timings timings_ep2.json --audio audio/mix_ep2_norm.wav --out out/bunker_ep2.mp4
 python3 cover_ep2.py out/cover_ep2.jpg
