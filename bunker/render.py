@@ -282,7 +282,7 @@ def draw_tag(img, text, lt, col=None):
     s = back_out(lt / 0.4)
     if s <= 0.01: return
     blue = text.startswith("ПРОВЕРКА")
-    f = font(int(40 * s))
+    f = font(max(1, int(40 * s)))
     if text[0].isdigit() and not blue:
         num, rest = text.split(" ", 1)
         tw = text_w(d, num + " ", f) + text_w(d, rest, f)

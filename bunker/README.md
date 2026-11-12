@@ -46,3 +46,16 @@ python3 sfx.py timings_ep2.json audio/sfx_ep2.wav ep2 && python3 music.py audio/
 python3 ep2.py --timings timings_ep2.json --audio audio/mix_ep2_norm.wav --out out/bunker_ep2.mp4
 python3 cover_ep2.py out/cover_ep2.jpg
 ```
+
+## Серия 3 — зрители выбрали СОСЕДА (`out/bunker_ep3.mp4`, ~2:17, обложка `out/cover_ep3.jpg`)
+Деньги Гены и договор на салфетке → дверь, вентиляция, еда (88 %) → ночные походы Гены, снова зелёные сапоги →
+камера в бункере → **поворот 1:** вор — Гена, но он спас героя от «серьёзных людей» (10 000 $ = украденные 7 900 + пенсия) →
+**поворот 2:** Гена — бывший астроном, удар через **60 дней** → 40 соседей не знают → чёрная машина, номер на 66 →
+выбор: **РАССКАЗАТЬ ВСЕМ** или **МОЛЧАТЬ**.
+```bash
+GAP=0.5 FISH_MODEL=s2.1-pro-free TIMINGS_OUT=timings_ep3.json python3 fish_tts.py voice_script_ep3.txt 48ec28a45588422b977a86460c11977f audio/fish_ep3
+python3 sfx.py timings_ep3.json audio/sfx_ep3.wav ep3 && python3 music.py audio/music_ep3.wav 140
+# сведение как выше -> audio/mix_ep3_norm.wav
+python3 ep3.py --timings timings_ep3.json --audio audio/mix_ep3_norm.wav --out out/bunker_ep3.mp4
+python3 cover_ep3.py out/cover_ep3.jpg
+```
