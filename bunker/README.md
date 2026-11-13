@@ -59,3 +59,16 @@ python3 sfx.py timings_ep3.json audio/sfx_ep3.wav ep3 && python3 music.py audio/
 python3 ep3.py --timings timings_ep3.json --audio audio/mix_ep3_norm.wav --out out/bunker_ep3.mp4
 python3 cover_ep3.py out/cover_ep3.jpg
 ```
+
+## Серия 4 — зрители выбрали МОЛЧАТЬ (`out/bunker_ep4.mp4`, ~3:20, обложка `out/cover_ep4.jpg`)
+Машина 66 — коллекторы банка: поле = залог, 7 дней на выезд → банк знает про 60 дней и забирает бункеры (схема) →
+новый код, замки (95 %) → осколки астероида, воронка → правительство: 57 дней → паника → тётя Валя с внуками, герой врёт
+«там погреб» → банк вскрывает бункер, приезжают военные → **поворот:** Гена поменял код и заперся с внучкой Машей →
+герой снаружи: 50 дней, 400 $ → банкир предлагает сделку → выбор: **БАНК** или **СОСЕДИ**.
+```bash
+GAP=0.45 FISH_MODEL=s2.1-pro-free TIMINGS_OUT=timings_ep4.json python3 fish_tts.py voice_script_ep4.txt 48ec28a45588422b977a86460c11977f audio/fish_ep4
+python3 sfx.py timings_ep4.json audio/sfx_ep4.wav ep4 && python3 music.py audio/music_ep4.wav 202
+# сведение как выше -> audio/mix_ep4_norm.wav
+python3 ep4.py --timings timings_ep4.json --audio audio/mix_ep4_norm.wav --out out/bunker_ep4.mp4
+python3 cover_ep4.py out/cover_ep4.jpg
+```
