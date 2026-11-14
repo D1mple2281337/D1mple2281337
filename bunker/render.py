@@ -466,7 +466,10 @@ def draw_choice(img, lt, gt, focus=None, vote=False):
                             fill=(30, 34, 52) if not dim else (24, 26, 38), outline=col if not dim else GREY,
                             width=int(7 * s))
         draw_bunker_icon(d, cx, cy - 70 * s, kind, s * 0.95)
-        d.text((cx, cy + 90 * s), name, font=font(int(54 * s)), fill=col if not dim else GREY, anchor="mm")
+        fs_ = int(54 * s)
+        while fs_ > 10 and d.textlength(name, font=font(fs_)) > 420 * s:
+            fs_ -= 2
+        d.text((cx, cy + 90 * s), name, font=font(fs_), fill=col if not dim else GREY, anchor="mm")
         d.text((cx, cy + 160 * s), "+ " + plus, font=font(int(32 * s), True), fill=GREEN if not dim else GREY,
                anchor="mm")
         d.text((cx, cy + 205 * s), "− " + minus, font=font(int(32 * s), True), fill=RED if not dim else GREY,

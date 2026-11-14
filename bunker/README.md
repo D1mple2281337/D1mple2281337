@@ -72,3 +72,17 @@ python3 sfx.py timings_ep4.json audio/sfx_ep4.wav ep4 && python3 music.py audio/
 python3 ep4.py --timings timings_ep4.json --audio audio/mix_ep4_norm.wav --out out/bunker_ep4.mp4
 python3 cover_ep4.py out/cover_ep4.jpg
 ```
+
+## Серия 5 — зрители выбрали БАНК (`out/bunker_ep5.mp4`, ~3:05, обложка `out/cover_ep5.jpg`)
+Договор на капоте (мелкий шрифт) → дверь режут плазмой → **поворот:** банкир Аркадий — сын Гены, Маша — его дочь →
+7 банкиров с пианино в бункере на двоих, «место» героя — будка охраны снаружи → пепел и осколки →
+Маша с термосом: под школой советское убежище на 300 человек → через вентиляцию: военные заберут школу, охранника выкинут →
+Аркадий: «проведёшь военных в 6:00 — получишь место» → записка Гены: «фильтр открывается снаружи» →
+выбор: **ПРОВЕСТИ** или **ПРЕДУПРЕДИТЬ** → колонна уже едет, до 6 утра 7 часов.
+```bash
+GAP=0.45 FISH_MODEL=s2.1-pro-free TIMINGS_OUT=timings_ep5.json python3 fish_tts.py voice_script_ep5.txt 48ec28a45588422b977a86460c11977f audio/fish_ep5
+python3 sfx.py timings_ep5.json audio/sfx_ep5.wav ep5 && python3 music.py audio/music_ep5.wav 188
+# сведение как выше -> audio/mix_ep5_norm.wav
+python3 ep5.py --timings timings_ep5.json --audio audio/mix_ep5_norm.wav --out out/bunker_ep5.mp4
+python3 cover_ep5.py out/cover_ep5.jpg
+```
