@@ -86,3 +86,17 @@ python3 sfx.py timings_ep5.json audio/sfx_ep5.wav ep5 && python3 music.py audio/
 python3 ep5.py --timings timings_ep5.json --audio audio/mix_ep5_norm.wav --out out/bunker_ep5.mp4
 python3 cover_ep5.py out/cover_ep5.jpg
 ```
+
+## Серия 6 — зрители выбрали ПРЕДУПРЕДИТЬ (`out/bunker_ep6.mp4`, ~2:57, обложка `out/cover_ep6.jpg`)
+Герой бросает пост → признаётся посёлку, Маша заступается → план: завал, табличка «Газ», фильтр →
+банкиров выкуривает пеплом (в пижамах, с собакой) → 6:00 колонна у школы, «тут свалка» →
+Аркадий ведёт военных к входу (его школа) → из люка первой выходит Маша → **поворот:** Аркадий врёт «это погреб» →
+осколок, колонна уходит → Гена: «Заходи» → банкиры просят места: свободно 2, их 7 →
+радио: «траектория изменилась, новая дата удара…» — обрыв → выбор: **ВПУСТИТЬ ВСЕХ** или **НИКОГО**.
+```bash
+GAP=0.42 FISH_MODEL=s2.1-pro-free TIMINGS_OUT=timings_ep6.json python3 fish_tts.py voice_script_ep6.txt 48ec28a45588422b977a86460c11977f audio/fish_ep6
+python3 sfx.py timings_ep6.json audio/sfx_ep6.wav ep6 && python3 music.py audio/music_ep6.wav 180
+# сведение как выше -> audio/mix_ep6_norm.wav
+python3 ep6.py --timings timings_ep6.json --audio audio/mix_ep6_norm.wav --out out/bunker_ep6.mp4
+python3 cover_ep6.py out/cover_ep6.jpg
+```
